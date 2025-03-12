@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Radio Madhoshi - The most romantic Bollywood playlist playing 24/7. Drunk in Love all day. Tune in for soulful melodies - रेडियो मदहोशी - ریڈیو مدہوشی">
+    <meta name="keywords" content="Radio Madhoshi, Radio, Bollywood, Best Romantic Playlist, Hindi Music, 24/7 Music, Non-Profit Radio, Bollywood romantic music, online Hindi radio, 24/7 romantic songs">
+    <meta property="og:title" content="Radio Madhoshi - Drunk in Love all day">
+    <meta property="og:description" content="Presenting the most romantic Bollywood playlist that ever existed. Enjoy 24/7 romantic Bollywood songs and feel the love with Radio Madhoshi.">
+    <meta property="og:image" content="https://i.imgur.com/A63NmLk.png">
+    <meta property="og:url" content="https://madhoshi.vercel.app">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>Radio Madhoshi - Drunk in Love</title>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;700&family=Great+Vibes&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Favicon -->
+    <link rel="icon" href="https://i.imgur.com/A63NmLk.png" type="image/x-icon">
+
+    <style>
+        :root {
+            --primary-color: #ff4d6d; /* Romantic coral */
+            --secondary-color: #ffd700; /* Golden glow */
+            --dark-bg: #2b0a2b; /* Deep plum */
+            --light-text: #ffebeb; /* Soft pink-white */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark-bg), #4b0049), radial-gradient(circle, rgba(255, 77, 109, 0.1), transparent);
+            background-attachment: fixed;
+            color: var(--light-text);
+            min-height: 100vh;
+            line-height: 1.6;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Preloader */
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark-bg);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s;
+        }
+        #preloader .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--primary-color);
+            border-top: 4px solid var(--secondary-color);
+            border-radius: 50%;
+            animation: spin 1s infinite ease-in-out;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Navbar */
+        .nav-container {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: linear-gradient(45deg, var(--primary-color), #ff6688);
+            color: var(--light-text);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(255, 77, 109, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: linear-gradient(45deg, #ff6688, var(--secondary-color));
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(255, 77, 109, 0.7);
+        }
+
+        .nav-menu {
+            display: none;
+            position: absolute;
+            top: 60px;
+            left: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1rem;
+            box-shadow: 0 10px 20px rgba(255, 77, 109, 0.3);
+            animation: slideIn 0.3s ease-in;
+        }
+
+        .nav-menu.active {
+            display: block;
+        }
+
+        .nav-item {
+            color: var(--light-text);
+            font-size: 1.2rem;
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .nav-item:hover {
+            color: var(--primary-color);
+            text-shadow: 0 0 5px rgba(255, 77, 109, 0.7);
+        }
+
+        /* Dialog Box */
+        .dialog {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 77, 109, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 77, 109, 0.2);
+            padding: 2rem;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 15px 40px rgba(255, 77, 109, 0.3);
+            z-index: 2000;
+            animation: fadeIn 0.5s ease-in;
+            overflow-y: auto;
+            max-height: 80vh;
+        }
+
+        .dialog h3 {
+            font-family: 'Great Vibes', cursive;
+            font-size: 2rem;
+            color: var(--secondary-color);
+            text-shadow: 0 2px 6px rgba(255, 215, 0, 0.5);
+            margin-bottom: 1rem;
+        }
+
+        .dialog p {
+            font-size: 1.1rem;
+            color: var(--light-text);
+            margin-bottom: 1rem;
+        }
+
+        .dialog .card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .dialog .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--light-text);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .dialog .close-btn:hover {
+            color: var(--primary-color);
+        }
+
+        /* Form Styling */
+        .request-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .request-form label {
+            font-size: 1rem;
+            color: var(--light-text);
+        }
+
+        .request-form input, .request-form textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid rgba(255, 77, 109, 0.3);
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light-text);
+            font-size: 1rem;
+        }
+
+        .request-form textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .request-form button {
+            background: linear-gradient(45deg, var(--primary-color), #ff6688);
+            color: var(--light-text);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            align-self: center;
+        }
+
+        .request-form button:hover {
+            background: linear-gradient(45deg, #ff6688, var(--secondary-color));
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 77, 109, 0.7);
+        }
+
+        /* Header */
+        header {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 2rem 1rem;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(255, 77, 109, 0.2);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+        }
+
+        .header-logo {
+            width: 100px;
+            filter: drop-shadow(0 4px 12px rgba(255, 77, 109, 0.7));
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+
+        header:hover .header-logo {
+            transform: scale(1.1);
+            filter: drop-shadow(0 6px 15px rgba(255, 77, 109, 0.9));
+        }
+
+        .header-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo-text {
+            font-family: 'Great Vibes', cursive;
+            font-size: 3.5rem;
+            color: var(--primary-color);
+            text-shadow: 0 3px 10px rgba(255, 77, 109, 0.6), 0 0 20px rgba(255, 215, 0, 0.3);
+            animation: pulseText 3s infinite ease-in-out;
+        }
+
+        .slogan {
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+            font-style: italic;
+            margin-top: 0.5rem;
+            text-shadow: 0 2px 6px rgba(255, 215, 0, 0.4);
+        }
+
+        /* Player Section */
+        .player-container {
+            max-width: 800px;
+            width: 100%;
+            margin: 3rem auto; /* Centered on all screens */
+            padding: 2.5rem;
+            background: rgba(255, 77, 109, 0.05);
+            border-radius: 30px;
+            box-shadow: 0 15px 40px rgba(255, 77, 109, 0.3), 0 0 60px rgba(255, 215, 0, 0.1);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 77, 109, 0.2);
+            text-align: center;
+            animation: fadeIn 1.5s ease-in;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .player-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 77, 109, 0.1), transparent);
+            animation: rotateGlow 10s infinite linear;
+            z-index: -1;
+        }
+
+        .player-title {
+            font-family: 'Great Vibes', cursive;
+            font-size: 2rem;
+            color: var(--secondary-color);
+            margin-bottom: 2rem;
+            text-shadow: 0 3px 8px rgba(255, 215, 0, 0.5);
+        }
+
+        .visualizer {
+            height: 120px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 4px;
+            margin: 1.5rem 0;
+            animation: idlePulse 4s infinite ease-in-out;
+        }
+
+        .bar {
+            width: 8px;
+            height: 20px;
+            background: linear-gradient(to top, var(--primary-color), rgba(255, 77, 109, 0.5));
+            border-radius: 10px 10px 0 0;
+            transition: height 0.2s ease;
+            box-shadow: 0 0 5px rgba(255, 77, 109, 0.7);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.2rem;
+            margin: 1.5rem 0;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, var(--primary-color), #ff6688);
+            color: var(--light-text);
+            border: none;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(255, 77, 109, 0.5);
+        }
+
+        .btn:hover {
+            background: linear-gradient(45deg, #ff6688, var(--secondary-color));
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(255, 77, 109, 0.7);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .volume-control {
+            width: 70%;
+            max-width: 250px;
+            margin: 0 auto;
+        }
+
+        .volume-slider {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: rgba(255, 77, 109, 0.3);
+            border-radius: 3px;
+            outline: none;
+            transition: background 0.3s;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--secondary-color);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+        }
+
+        .volume-slider:hover::-webkit-slider-thumb {
+            transform: scale(1.1);
+        }
+
+        .now-playing {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(255, 77, 109, 0.1);
+            border-radius: 12px;
+            font-size: 1.1rem;
+            text-shadow: 0 1px 4px rgba(255, 77, 109, 0.5);
+            animation: romanticGlow 2s infinite ease-in-out;
+        }
+
+        /* About Section */
+        .about {
+            max-width: 800px;
+            width: 100%;
+            margin: 3rem auto; /* Centered on all screens */
+            padding: 2.5rem;
+            background: rgba(255, 77, 109, 0.05);
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(255, 77, 109, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 77, 109, 0.15);
+        }
+
+        .about h2 {
+            font-family: 'Great Vibes', cursive;
+            font-size: 2rem;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+            text-shadow: 0 3px 8px rgba(255, 215, 0, 0.5);
+        }
+
+        .about p {
+            font-size: 1.2rem;
+            color: var(--light-text);
+            animation: fadeInText 2s ease-in;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 2rem 1rem;
+            text-align: center;
+            box-shadow: 0 -4px 15px rgba(255, 77, 109, 0.2);
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .social-icon {
+            font-size: 1.6rem;
+            color: var(--light-text);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 77, 109, 0.2);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .social-icon:hover {
+            background: var(--primary-color);
+            color: var(--secondary-color);
+            transform: scale(1.2);
+            box-shadow: 0 0 10px rgba(255, 77, 109, 0.7);
+        }
+
+        footer p {
+            font-size: 1rem;
+            text-shadow: 0 1px 4px rgba(255, 77, 109, 0.4);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInText {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes romanticGlow {
+            0% { box-shadow: 0 0 5px rgba(255, 77, 109, 0.5); }
+            50% { box-shadow: 0 0 15px rgba(255, 77, 109, 0.8), 0 0 25px rgba(255, 215, 0, 0.3); }
+            100% { box-shadow: 0 0 5px rgba(255, 77, 109, 0.5); }
+        }
+
+        @keyframes pulseText {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes rotateGlow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes idlePulse {
+            0% { transform: scaleY(1); }
+            50% { transform: scaleY(1.05); }
+            100% { transform: scaleY(1); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .logo-text { font-size: 2.5rem; }
+            .header-logo { width: 75px; }
+            .header { flex-direction: column; gap: 0.75rem; padding: 1.5rem 1rem; }
+            .player-container { 
+                padding: 1.5rem; 
+                margin: 2rem auto; /* Centered on mobile */
+            }
+            .visualizer { height: 80px; }
+            .controls { gap: 0.8rem; }
+            .btn { width: 45px; height: 45px; font-size: 1rem; }
+            .about { 
+                padding: 1.5rem; 
+                margin: 2rem auto; /* Centered on mobile */
+            }
+            .nav-btn { width: 40px; height: 40px; font-size: 1.2rem; }
+            .nav-menu { top: 50px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Preloader -->
+    <div id="preloader">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Navbar -->
+    <div class="nav-container">
+        <button class="nav-btn" onclick="toggleNavMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="nav-menu" id="navMenu">
+            <div class="nav-item" onclick="openDialog('aboutDialog')">About</div>
+            <div class="nav-item" onclick="openDialog('requestDialog')">Live Request</div>
+            <div class="nav-item" onclick="openDialog('announcementDialog')">Announcement</div>
+        </div>
+    </div>
+
+    <!-- Dialog Boxes -->
+    <div id="aboutDialog" class="dialog">
+        <button class="close-btn" onclick="closeDialog('aboutDialog')">×</button>
+        <h3>About Radio Madhoshi</h3>
+        <div class="card">
+            <p>Welcome to Radio Madhoshi, your ultimate destination for the best romantic Bollywood songs, playing 24/7. Presenting the most romantic Bollywood playlist that ever existed. Whether you’re reliving precious memories, enjoying quiet moments, or simply vibing to Bollywood's finest romantic melodies, Radio Madhoshi is your perfect companion. Experience love, Bollywood-style—only on Radio Madhoshi!</p>
+        </div>
+        <div class="card">
+            <p><strong>Disclaimer:</strong> Dear Listeners, Radio Madhoshi is a passion project and will always remain non-profit and commercial-free. The adverts you occasionally hear are part of the broadcasting platform's support structure.</p>
+        </div>
+    </div>
+    <div id="requestDialog" class="dialog">
+        <button class="close-btn" onclick="closeDialog('requestDialog')">×</button>
+        <h3>Request a Song</h3>
+        <form class="request-form" id="requestForm" onsubmit="sendRequest(event)">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" required>
+            <label for="location">Location</label>
+            <input type="text" id="location" name="location" required>
+            <label for="songName">Song Name</label>
+            <input type="text" id="songName" name="songName" required>
+            <label for="artistName">Artist Name</label>
+            <input type="text" id="artistName" name="artistName" required>
+            <label for="albumMovie">Album/Movie</label>
+            <input type="text" id="albumMovie" name="albumMovie" required>
+            <label for="dedicatedTo">Dedicated to</label>
+            <input type="text" id="dedicatedTo" name="dedicatedTo">
+            <label for="message">Message for Your Loved One</label>
+            <textarea id="message" name="message"></textarea>
+            <button type="submit">Send</button>
+        </form>
+    </div>
+    <div id="announcementDialog" class="dialog">
+        <button class="close-btn" onclick="closeDialog('announcementDialog')">×</button>
+        <h3>Announcements</h3>
+        <p>Stay tuned for special events and romantic surprises coming your way on Radio Madhoshi!</p>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <img src="https://i.imgur.com/m47TKsB.png" alt="Radio Madhoshi Logo" class="header-logo">
+        <div class="header-content">
+            <div class="logo-text">Radio Madhoshi</div>
+            <div class="slogan">Drunk in Love all day</div>
+        </div>
+    </header>
+
+    <!-- Player Section -->
+    <section class="player-container">
+        <h2 class="player-title">Pyaar Play Kare</h2>
+        <div class="visualizer" id="visualizer"></div>
+        <div class="controls">
+            <button class="btn" id="playBtn"><i class="fas fa-play"></i></button>
+            <button class="btn" id="pauseBtn" style="display:none;"><i class="fas fa-pause"></i></button>
+            <button class="btn" id="muteBtn"><i class="fas fa-volume-up"></i></button>
+        </div>
+        <div class="volume-control">
+            <input type="range" min="0" max="100" value="70" class="volume-slider" id="volumeSlider">
+        </div>
+        <div class="now-playing">
+            <p>🎶 Romantic Bollywood Melodies</p>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about">
+        <h2>A Love Story in Sound</h2>
+        <p>Radio Madhoshi brings you the heartbeats of Bollywood romance, streaming 24/7. A non-profit passion project dedicated to soulful melodies that keep love alive.</p>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="social-links">
+            <a href="https://facebook.com/RadioMadhoshi" target="_blank" class="social-icon"><i class="fab fa-facebook"></i></a>
+            <a href="#" target="_blank" class="social-icon"><i class="fab fa-instagram"></i></a>
+            <a href="#" target="_blank" class="social-icon"><i class="fab fa-twitter"></i></a>
+        </div>
+        <p>© 2025 Radio Madhoshi | Crafted with Love</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Preloader
+            window.addEventListener('load', () => {
+                const preloader = document.getElementById('preloader');
+                preloader.style.opacity = '0';
+                setTimeout(() => preloader.remove(), 500);
+            });
+
+            // Audio Setup
+            const audio = new Audio('https://stream.zeno.fm/7rsl8fsccf8uv');
+            audio.preload = 'auto';
+
+            // DOM Elements
+            const playBtn = document.getElementById('playBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const muteBtn = document.getElementById('muteBtn');
+            const volumeSlider = document.getElementById('volumeSlider');
+            const visualizer = document.getElementById('visualizer');
+
+            // Create Visualizer Bars
+            const barCount = 25;
+            for (let i = 0; i < barCount; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                visualizer.appendChild(bar);
+            }
+            const bars = document.querySelectorAll('.bar');
+
+            // Initial Volume
+            audio.volume = volumeSlider.value / 100;
+
+            // Play Button
+            playBtn.addEventListener('click', () => {
+                audio.play().catch(err => {
+                    console.error('Playback failed:', err);
+                    alert('Unable to play stream. Please try again.');
+                });
+                playBtn.style.display = 'none';
+                pauseBtn.style.display = 'flex';
+                startVisualizer();
+            });
+
+            // Pause Button
+            pauseBtn.addEventListener('click', () => {
+                audio.pause();
+                playBtn.style.display = 'flex';
+                pauseBtn.style.display = 'none';
+                stopVisualizer();
+            });
+
+            // Mute Button
+            muteBtn.addEventListener('click', () => {
+                audio.muted = !audio.muted;
+                muteBtn.innerHTML = audio.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+            });
+
+            // Volume Slider
+            volumeSlider.addEventListener('input', () => {
+                audio.volume = volumeSlider.value / 100;
+                muteBtn.innerHTML = volumeSlider.value == 0 ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+                audio.muted = volumeSlider.value == 0;
+            });
+
+            // Visualizer Animation
+            let visualizerInterval;
+            function startVisualizer() {
+                if (visualizerInterval) clearInterval(visualizerInterval);
+                visualizer.style.animation = 'none';
+                visualizerInterval = setInterval(() => {
+                    bars.forEach(bar => {
+                        const height = Math.random() * 70 + 5;
+                        bar.style.height = `${height}px`;
+                        bar.style.transition = `height ${Math.random() * 0.3 + 0.1}s ease`;
+                    });
+                }, 120);
+            }
+
+            function stopVisualizer() {
+                clearInterval(visualizerInterval);
+                bars.forEach(bar => bar.style.height = '20px');
+                visualizer.style.animation = 'idlePulse 4s infinite ease-in-out';
+            }
+
+            // Error Handling
+            audio.addEventListener('error', () => {
+                alert('Stream loading failed. Please check your connection.');
+                playBtn.style.display = 'flex';
+                pauseBtn.style.display = 'none';
+                stopVisualizer();
+            });
+
+            // Navbar Toggle
+            window.toggleNavMenu = function() {
+                const menu = document.getElementById('navMenu');
+                menu.classList.toggle('active');
+            };
+
+            // Dialog Functions
+            window.openDialog = function(dialogId) {
+                const dialog = document.getElementById(dialogId);
+                dialog.style.display = 'block';
+                document.getElementById('navMenu').classList.remove('active');
+            };
+
+            window.closeDialog = function(dialogId) {
+                const dialog = document.getElementById(dialogId);
+                dialog.style.display = 'none';
+            };
+
+            // Request Form Submission
+            window.sendRequest = function(event) {
+                event.preventDefault();
+                const form = document.getElementById('requestForm');
+                const name = form.name.value;
+                const location = form.location.value;
+                const songName = form.songName.value;
+                const artistName = form.artistName.value;
+                const albumMovie = form.albumMovie.value;
+                const dedicatedTo = form.dedicatedTo.value;
+                const message = form.message.value;
+
+                const subject = `Song Request: ${name}, ${location}`;
+                const body = `Song Name: ${songName}\nArtist Name: ${artistName}\nAlbum/Movie: ${albumMovie}\nDedicated to: ${dedicatedTo}\nMessage for your loved one: ${message}`;
+                const mailtoLink = `mailto:radiomadhoshi@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+                window.location.href = mailtoLink;
+                closeDialog('requestDialog');
+            };
+        });
+    </script>
+</body>
+</html>
