@@ -334,7 +334,7 @@
 
         .bar {
             width: 8px;
-            height: 20px;
+            height: 0px; /* Start with 0 height */
             background: linear-gradient(to top, var(--primary-color), rgba(255, 77, 109, 0.5));
             border-radius: 10px 10px 0 0;
             transition: height 0.2s ease;
@@ -682,7 +682,7 @@
                 });
                 playBtn.style.display = 'none';
                 pauseBtn.style.display = 'flex';
-                startVisualizer();
+                if (!audio.muted && audio.volume > 0) startVisualizer();
             });
 
             // Pause Button
@@ -697,6 +697,11 @@
             muteBtn.addEventListener('click', () => {
                 audio.muted = !audio.muted;
                 muteBtn.innerHTML = audio.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+                if (audio.muted || audio.volume == 0) {
+                    stopVisualizer();
+                } else if (!audio.paused) {
+                    startVisualizer();
+                }
             });
 
             // Volume Slider
@@ -704,16 +709,21 @@
                 audio.volume = volumeSlider.value / 100;
                 muteBtn.innerHTML = volumeSlider.value == 0 ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
                 audio.muted = volumeSlider.value == 0;
+                if (audio.muted || audio.volume == 0) {
+                    stopVisualizer();
+                } else if (!audio.paused) {
+                    startVisualizer();
+                }
             });
 
             // Visualizer Animation
             let visualizerInterval;
             function startVisualizer() {
                 if (visualizerInterval) clearInterval(visualizerInterval);
-                visualizer.style.animation = 'none';
+                visualizer.style.animation = 'none'; // Remove idle pulse when active
                 visualizerInterval = setInterval(() => {
                     bars.forEach(bar => {
-                        const height = Math.random() * 70 + 5;
+                        const height = Math.random() * 70 + 5; // Random height between 5px and 75px
                         bar.style.height = `${height}px`;
                         bar.style.transition = `height ${Math.random() * 0.3 + 0.1}s ease`;
                     });
@@ -721,9 +731,12 @@
             }
 
             function stopVisualizer() {
-                clearInterval(visualizerInterval);
-                bars.forEach(bar => bar.style.height = '20px');
-                visualizer.style.animation = 'idlePulse 4s infinite ease-in-out';
+                if (visualizerInterval) clearInterval(visualizerInterval);
+                bars.forEach(bar => {
+                    bar.style.height = '0px'; // Bars disappear completely
+                    bar.style.transition = 'height 0.2s ease'; // Smooth transition to 0
+                });
+                visualizer.style.animation = 'idlePulse 4s infinite ease-in-out'; // Reapply idle pulse
             }
 
             // Error Handling
@@ -733,6 +746,9 @@
                 pauseBtn.style.display = 'none';
                 stopVisualizer();
             });
+
+            // Initial State (inactive)
+            stopVisualizer();
 
             // Navbar Toggle
             window.toggleNavMenu = function() {
