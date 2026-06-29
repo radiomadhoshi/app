@@ -590,191 +590,205 @@
     </div>
 
     <script>
-        // Modal Event System
-        const aboutBtn = document.getElementById('aboutBtn');
-        const contactBtn = document.getElementById('contactBtn');
-        const aboutModal = document.getElementById('aboutModal');
-        const requestDialog = document.getElementById('requestDialog');
+    // Modal Event System
+    const aboutBtn = document.getElementById('aboutBtn');
+    const contactBtn = document.getElementById('contactBtn');
+    const aboutModal = document.getElementById('aboutModal');
+    const requestDialog = document.getElementById('requestDialog');
 
-        aboutBtn.addEventListener('click', () => openModal('aboutModal'));
-        contactBtn.addEventListener('click', () => openModal('requestDialog'));
+    aboutBtn.addEventListener('click', () => openModal('aboutModal'));
+    contactBtn.addEventListener('click', () => openModal('requestDialog'));
 
-        function openModal(modalId) {
-            const modal = document.getElementById(modalId);
-            modal.style.display = 'flex';
-            setTimeout(() => modal.classList.add('active'), 10);
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('active'), 10);
+    }
+
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.classList.remove('active');
+        setTimeout(() => modal.style.display = 'none', 300);
+    }
+
+    // Close modal when clicking outside content box
+    window.onclick = function(event) {
+        if (event.target == aboutModal) closeModal('aboutModal');
+        if (event.target == requestDialog) closeModal('requestDialog');
+    }
+
+    // Live Request Email Mailto Architecture
+    window.sendRequest = function(event) {
+        event.preventDefault();
+        
+        const name = document.getElementById('name').value;
+        const location = document.getElementById('location').value;
+        const songName = document.getElementById('songName').value || 'N/A';
+        const artistName = document.getElementById('artistName').value || 'N/A';
+        const albumMovie = document.getElementById('albumMovie').value || 'N/A';
+        const dedicatedTo = document.getElementById('dedicatedTo').value || 'N/A';
+        const message = document.getElementById('message').value || 'N/A';
+
+        const targetEmail = "radiomadhoshi@gmail.com";
+        const emailSubject = `Song Request: "${name}" from "${location}"`;
+        
+        // Structured plain text template formatting for email body client
+        let emailBody = `Hello Radio Madhoshi Team,\n\nYou have received a live song request via the webapp form. Here are the submission parameters:\n\n`;
+        emailBody += `--------------------------------------------------\n`;
+        emailBody += `• Requester Name : ${name}\n`;
+        emailBody += `• Location       : ${location}\n`;
+        emailBody += `• Requested Song : ${songName}\n`;
+        emailBody += `• Artist Track   : ${artistName}\n`;
+        emailBody += `• Album / Movie  : ${albumMovie}\n`;
+        emailBody += `• Dedicated To   : ${dedicatedTo}\n`;
+        emailBody += `--------------------------------------------------\n\n`;
+        emailBody += `• Personal Message:\n"${message}"\n\n`;
+        emailBody += `Generated dynamically by Radio Madhoshi WebApp Client.`;
+
+        // Explicit URL safe composition parsing
+        const constructedMailto = `mailto:${targetEmail}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+        
+        // Execute fallback native dispatch sequence
+        window.location.href = constructedMailto;
+        closeModal('requestDialog');
+    };
+
+    // Core Player Engine & Real-time Canvas Renderer
+    document.addEventListener('DOMContentLoaded', () => {
+        const streamUrl = 'https://stream.zeno.fm/7rsl8fsccf8uv';
+        const audio = new Audio();
+        audio.crossOrigin = "anonymous"; 
+        audio.preload = "none"; // স্ট্রিমিং লিক ঠেকানোর জন্য
+        
+        const playBtn = document.getElementById('playBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const muteBtn = document.getElementById('muteBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const disk = document.getElementById('disk');
+        
+        const visualizerContainer = document.getElementById('visualizerContainer');
+        const canvas = document.getElementById('visualizer');
+        const ctx = canvas.getContext('2d');
+        
+        audio.volume = volumeSlider.value / 100;
+
+        let audioContext, analyser, source, dataArray, animationId;
+
+        function initAudio() {
+            if (!audioContext) {
+                // FIX 1: latencyHint: 'playback' ব্যবহার করা হয়েছে যাতে লাইভ স্ট্রিমে বাফার বেশি পায় এবং গ্লিচ না হয়।
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                audioContext = new AudioContextClass({ latencyHint: 'playback' });
+                
+                analyser = audioContext.createAnalyser();
+                source = audioContext.createMediaElementSource(audio);
+                
+                source.connect(analyser);
+                analyser.connect(audioContext.destination);
+                
+                analyser.fftSize = 64; 
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
+            }
+            if (audioContext.state === 'suspended') audioContext.resume();
         }
 
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            modal.classList.remove('active');
-            setTimeout(() => modal.style.display = 'none', 300);
+        function drawVisualizer() {
+            animationId = requestAnimationFrame(drawVisualizer);
+            
+            canvas.width = visualizerContainer.offsetWidth;
+            canvas.height = visualizerContainer.offsetHeight;
+
+            analyser.getByteFrequencyData(dataArray);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const barWidth = (canvas.width / analyser.frequencyBinCount) * 1.5;
+            let x = 0;
+
+            for (let i = 0; i < analyser.frequencyBinCount; i++) {
+                const barHeight = (dataArray[i] / 255) * canvas.height;
+                
+                const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
+                gradient.addColorStop(0, '#ff4d6d');
+                gradient.addColorStop(1, '#ffccd5');
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.roundRect(x, canvas.height - barHeight, barWidth - 4, barHeight, 5);
+                ctx.fill();
+
+                x += barWidth;
+            }
         }
 
-        // Close modal when clicking outside content box
-        window.onclick = function(event) {
-            if (event.target == aboutModal) closeModal('aboutModal');
-            if (event.target == requestDialog) closeModal('requestDialog');
-        }
+        playBtn.addEventListener('click', () => {
+            // FIX 2: initAudio() কলটি অডিও প্রমিসের বাইরে (সরাসরি ক্লিকের ভেতর) আনা হয়েছে। (Safari/iOS ফিক্স)
+            initAudio();
 
-        // Live Request Email Mailto Architecture
-        window.sendRequest = function(event) {
-            event.preventDefault();
-            
-            const name = document.getElementById('name').value;
-            const location = document.getElementById('location').value;
-            const songName = document.getElementById('songName').value || 'N/A';
-            const artistName = document.getElementById('artistName').value || 'N/A';
-            const albumMovie = document.getElementById('albumMovie').value || 'N/A';
-            const dedicatedTo = document.getElementById('dedicatedTo').value || 'N/A';
-            const message = document.getElementById('message').value || 'N/A';
-
-            const targetEmail = "radiomadhoshi@gmail.com";
-            const emailSubject = `Song Request: "${name}" from "${location}"`;
-            
-            // Structured plain text template formatting for email body client
-            let emailBody = `Hello Radio Madhoshi Team,\n\nYou have received a live song request via the webapp form. Here are the submission parameters:\n\n`;
-            emailBody += `--------------------------------------------------\n`;
-            emailBody += `• Requester Name : ${name}\n`;
-            emailBody += `• Location       : ${location}\n`;
-            emailBody += `• Requested Song : ${songName}\n`;
-            emailBody += `• Artist Track   : ${artistName}\n`;
-            emailBody += `• Album / Movie  : ${albumMovie}\n`;
-            emailBody += `• Dedicated To   : ${dedicatedTo}\n`;
-            emailBody += `--------------------------------------------------\n\n`;
-            emailBody += `• Personal Message:\n"${message}"\n\n`;
-            emailBody += `Generated dynamically by Radio Madhoshi WebApp Client.`;
-
-            // Explicit URL safe composition parsing
-            const constructedMailto = `mailto:${targetEmail}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-            
-            // Execute fallback native dispatch sequence
-            window.location.href = constructedMailto;
-            closeModal('requestDialog');
-        };
-
-        // Core Player Engine & Real-time Canvas Renderer
-        document.addEventListener('DOMContentLoaded', () => {
-            const streamUrl = 'https://stream.zeno.fm/7rsl8fsccf8uv';
-            const audio = new Audio();
-            audio.crossOrigin = "anonymous"; 
-            
-            const playBtn = document.getElementById('playBtn');
-            const pauseBtn = document.getElementById('pauseBtn');
-            const muteBtn = document.getElementById('muteBtn');
-            const volumeSlider = document.getElementById('volumeSlider');
-            const disk = document.getElementById('disk');
-            
-            const visualizerContainer = document.getElementById('visualizerContainer');
-            const canvas = document.getElementById('visualizer');
-            const ctx = canvas.getContext('2d');
-            
-            audio.volume = volumeSlider.value / 100;
-
-            let audioContext, analyser, source, dataArray, animationId;
-
-            function initAudio() {
-                if (!audioContext) {
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    analyser = audioContext.createAnalyser();
-                    source = audioContext.createMediaElementSource(audio);
-                    
-                    source.connect(analyser);
-                    analyser.connect(audioContext.destination);
-                    
-                    analyser.fftSize = 64; 
-                    dataArray = new Uint8Array(analyser.frequencyBinCount);
-                }
-                if (audioContext.state === 'suspended') audioContext.resume();
+            if(audio.src !== streamUrl) {
+                audio.src = streamUrl;
+                audio.load();
             }
-
-            function drawVisualizer() {
-                animationId = requestAnimationFrame(drawVisualizer);
+            
+            audio.play().then(() => {
+                playBtn.style.display = 'none';
+                pauseBtn.style.display = 'flex';
+                disk.classList.add('disk-spin');
                 
-                canvas.width = visualizerContainer.offsetWidth;
-                canvas.height = visualizerContainer.offsetHeight;
-
-                analyser.getByteFrequencyData(dataArray);
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                const barWidth = (canvas.width / analyser.frequencyBinCount) * 1.5;
-                let x = 0;
-
-                for (let i = 0; i < analyser.frequencyBinCount; i++) {
-                    const barHeight = (dataArray[i] / 255) * canvas.height;
-                    
-                    const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
-                    gradient.addColorStop(0, '#ff4d6d');
-                    gradient.addColorStop(1, '#ffccd5');
-                    
-                    ctx.fillStyle = gradient;
-                    ctx.beginPath();
-                    ctx.roundRect(x, canvas.height - barHeight, barWidth - 4, barHeight, 5);
-                    ctx.fill();
-
-                    x += barWidth;
-                }
-            }
-
-            playBtn.addEventListener('click', () => {
-                if(audio.src !== streamUrl) audio.src = streamUrl;
+                visualizerContainer.style.display = 'block';
                 
-                audio.play().then(() => {
-                    initAudio();
-                    playBtn.style.display = 'none';
-                    pauseBtn.style.display = 'flex';
-                    disk.classList.add('disk-spin');
-                    
-                    visualizerContainer.style.display = 'block';
-                    drawVisualizer();
-                }).catch(err => {
-                    alert('Stream connecting... Please try again.');
-                });
+                // ডাবল অ্যানিমেশন লুপ ঠেকানোর জন্য পূর্বের ফ্রেম ক্যানসেল করা
+                if(animationId) cancelAnimationFrame(animationId);
+                drawVisualizer();
+            }).catch(err => {
+                alert('Stream connecting... Please try again.');
             });
-
-            pauseBtn.addEventListener('click', () => {
-                audio.pause();
-                audio.src = ''; 
-                playBtn.style.display = 'flex';
-                pauseBtn.style.display = 'none';
-                disk.classList.remove('disk-spin');
-                
-                visualizerContainer.style.display = 'none';
-                cancelAnimationFrame(animationId);
-            });
-
-            volumeSlider.addEventListener('input', (e) => {
-                audio.volume = e.target.value / 100;
-                updateMuteBtn();
-            });
-
-            muteBtn.addEventListener('click', () => {
-                audio.muted = !audio.muted;
-                updateMuteBtn();
-            });
-
-            function updateMuteBtn() {
-                if(audio.muted || audio.volume === 0) {
-                    muteBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
-                } else {
-                    muteBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
-                }
-            }
-
-            // Continuous Real-Time Streaming Metadata Parsing Block
-            const currentSongEl = document.getElementById('currentSong');
-            try {
-                const eventSource = new EventSource('https://api.zeno.fm/mounts/metadata/subscribe/7rsl8fsccf8uv');
-                eventSource.onmessage = function(event) {
-                    if (event.data && event.data !== "ping") {
-                        try {
-                            const metadata = JSON.parse(event.data);
-                            currentSongEl.textContent = metadata.streamTitle ? metadata.streamTitle + " 🎶" : "The most romantic Bollywood playlist that ever existed 🎶";
-                        } catch (e) {}
-                    }
-                };
-            } catch (err) {}
         });
-    </script>
+
+        pauseBtn.addEventListener('click', () => {
+            audio.pause();
+            audio.src = ''; 
+            audio.load(); // কানেকশন পুরোপুরি ক্লোজ করার জন্য
+            
+            playBtn.style.display = 'flex';
+            pauseBtn.style.display = 'none';
+            disk.classList.remove('disk-spin');
+            
+            visualizerContainer.style.display = 'none';
+            if(animationId) cancelAnimationFrame(animationId);
+        });
+
+        volumeSlider.addEventListener('input', (e) => {
+            audio.volume = e.target.value / 100;
+            updateMuteBtn();
+        });
+
+        muteBtn.addEventListener('click', () => {
+            audio.muted = !audio.muted;
+            updateMuteBtn();
+        });
+
+        function updateMuteBtn() {
+            if(audio.muted || audio.volume === 0) {
+                muteBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            } else {
+                muteBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+            }
+        }
+
+        // Continuous Real-Time Streaming Metadata Parsing Block
+        const currentSongEl = document.getElementById('currentSong');
+        try {
+            const eventSource = new EventSource('https://api.zeno.fm/mounts/metadata/subscribe/7rsl8fsccf8uv');
+            eventSource.onmessage = function(event) {
+                if (event.data && event.data !== "ping") {
+                    try {
+                        const metadata = JSON.parse(event.data);
+                        currentSongEl.textContent = metadata.streamTitle ? metadata.streamTitle + " 🎶" : "The most romantic Bollywood playlist that ever existed 🎶";
+                    } catch (e) {}
+                }
+            };
+        } catch (err) {}
+    });
+</script>
 </body>
 </html>
